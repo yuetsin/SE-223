@@ -36,3 +36,4 @@ FROM
             AND student.id = CCOUNT.id
             AND a_course_count > 0
     ORDER BY id) AS RAW_T
+ORDER BY dept_name, level, a_num

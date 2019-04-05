@@ -1,16 +1,18 @@
-DELIMITER $$
-DROP PROCEDURE IF EXISTS teacher_salary;
-CREATE PROCEDURE teacher_salary(dept_name VARCHAR(20))
+DELIMITER ;;
+DROP FUNCTION IF EXISTS teacher_salary;;
+
+CREATE FUNCTION teacher_salary(dept_name VARCHAR(20))
+RETURNS DECIMAL(8, 2)
 READS SQL DATA
 BEGIN
-	SELECT dept_name, SUM(salary) FROM instructor
+	DECLARE AVG DECIMAL(8, 2);
+	SELECT SUM(salary) INTO AVG FROM instructor
     WHERE instructor.dept_name = dept_name;
-END;
+    RETURN AVG;
+END;;
 
 SELECT 
-    dept_name, TEACHER_SALARY(dept_name)
+    dept_name, teacher_salary(dept_name) as TOT_SALARY
 FROM
     department
-WHERE
-    TEACHER_SALARY(dept_name) IS NOT NULL
-ORDER BY TEACHER_SALARY(dept_name) DESC; 
+ORDER BY TOT_SALARY DESC;;
