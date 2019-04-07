@@ -1,0 +1,42 @@
+题目 1 笔记
+第一题的思路是：首先将 advisor、teaches、takes、student 和 course 五张表进行笛卡尔积连接。需要这些表的原因是：
+首先，要知道每个学生的名字，因此需要 students 表。
+要知道每个学生的导师是谁，因此需要 advisor 表。
+要知道学生选了哪些的课，得到了哪些分数，因此需要 takes 表。
+之后，需要知道课程由哪些老师开设，因此需要 teaches 表。
+最后，还需要知道符合条件课程的名称，因此需要 course 表。
+
+而所需的 WHERE 条件有五个：
+一是：这名学生是 advise 关系中的学生。
+二是：这位老师是 advise 关系中的老师。
+三是：这名学生选了某门课程。
+四是：这门课程是由这位老师开的。
+
+为了获取后面的 course.title，因此 takes.course_id、course.course_id 均表示这门课程。
+
+然后，再将得到的表过滤，过滤条件为 grade = 'C ' OR grade = ‘C-‘。成绩在 C 或是 C-，并 SELECT student.name, course.title, takes.grade 三列即可。
+
+题目 2 笔记
+第二题的思路是：首先定义一个返回 teacher_salary 的 FUNCTION。
+FUNCTION 接受的参数是一个 varchar(20)，和数据库中 dept_name 的类型一致。
+FUNCTION 的返回值是 DECIMAL(8. 2)，和数据库中 salary 的类型一致。
+FUNCTION 有修饰符 READS SQL DATA，说明这个函数只对数据库进行读操作而不进行修改操作。
+
+FUNCTION 声明了一个类型为 DECIMAL(8, 2) 的变量，用来存储函数运算的结果。
+FUNCTION 内使用 SUM 聚合操作符对所有本专业教师薪资之和进行了统计，随后使用 INTO 语句将其存入变量 AVG 中。
+最后 FUNCTION 将这个 AVG 值返回。
+
+在调用时，只需用类似于函数的语法将其 SELECT 出即可统计出各 department 教师的总薪资。
+
+题目 3 笔记
+第三题的思路是：首先列出每名同学得到 A 或 A+ 的课程数量。
+
+具体操作是：将 student 表和 takes 表作笛卡尔积连接，并过滤保留其中所有 grade 为 A 或 A+ 的记录。然后，对取出的表作 COUNT 聚合，得到的是每个学生 name 在仅有 A 和 A+ 的课程表之中的出现次数。
+
+同样的，统计出每个学生得到 C 或 C- 的课程数量。
+
+上面得到两张表后，对他们作自然连接，这样每名学生的名字都可以对应一个 a_course_count 和 c_course_count，分别代表他/她得到 A/A+ 的课程数目和得到 C/C- 的课程数目。
+
+最后，使用 IF 语句对 a_c_c 和 c_c_c 两列数据进行判断，生成一列新数据（A/B）。最后，将得到的数据按照 dept_name、level 和 a_num 进行排序，得到结果。
+
+
