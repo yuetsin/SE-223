@@ -1,5 +1,5 @@
-SELECT 
-    *
+SELECT DISTINCT
+	T.name, T.title
 FROM
     (SELECT 
         student.name, course.title, takes.grade
