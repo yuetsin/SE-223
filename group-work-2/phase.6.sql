@@ -1,4 +1,3 @@
-DELIMITER ;;
 DROP FUNCTION IF EXISTS get_average_score;
 
 CREATE FUNCTION get_average_score (
@@ -14,4 +13,3 @@ BEGIN
 	WHERE score.username = check_username;
 	RETURN AVG;
 END;
-DELIMITER ;

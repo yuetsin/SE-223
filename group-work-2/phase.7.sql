@@ -1,4 +1,3 @@
-DELIMITER ;;
 DROP PROCEDURE IF EXISTS add_balance;
 
 CREATE PROCEDURE add_balance (
@@ -8,6 +7,5 @@ CREATE PROCEDURE add_balance (
 BEGIN
 	UPDATE user_attributes
 	SET balance = balance + add_balance
-	WHERE username = check_username
-END
-DELIMITER ;
+	WHERE username = check_username;
+END;

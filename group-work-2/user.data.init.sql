@@ -22,20 +22,20 @@ VALUES ('o1', 'huangbin');
 INSERT INTO `orders` (`order_id`, `username`)
 VALUES ('o2', 'huangbjia');
 
-INSERT INTO `user_orders` (`username`, `order_id`, `state`, `reciever`, `reciever_address`
+INSERT INTO `user_orders` (`username`, `order_id`, `state`, `receiver`, `receiver_address`
 	, `r_phone`)
 VALUES ('huangbin', 'o1', '0', 'bawang', 'd15'
 	, '1478683683');
 
-INSERT INTO `user_orders` (`username`, `order_id`, `state`, `reciever`, `reciever_address`
+INSERT INTO `user_orders` (`username`, `order_id`, `state`, `receiver`, `receiver_address`
 	, `r_phone`)
 VALUES ('huangyu', 'o2', '1', 'bawa', 'd14'
 	, '147433683');
 
-INSERT INTO `coupon` (`trigge`, `discount`, `coupon_id`, `store_id`)
+INSERT INTO `coupon` (`coupon_trigger`, `discount`, `coupon_id`, `store_id`)
 VALUES (20, 5, 'a567', 'ad');
 
-INSERT INTO `coupon` (`trigge`, `discount`, `coupon_id`, `store_id`)
+INSERT INTO `coupon` (`coupon_trigger`, `discount`, `coupon_id`, `store_id`)
 VALUES (30, 5, 'a568', 'ae');
 
 INSERT INTO `dishes` (`dish_id`, `store_id`, `name`, `price`)
