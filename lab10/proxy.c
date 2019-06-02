@@ -127,8 +127,8 @@ size_t perform_request(int writebackfd, char* host, char* port, char** param_lis
     size_t n;
     rio_t  request_rio;
     char   response[MAXLINE];
-
-    for (size_t i = 0; i < MAXPARAMS; i++) {
+    size_t i;
+    for (i = 0; i < MAXPARAMS; i++) {
         if (param_list[i]) {
 
             __LOG__(file_fd, "Param #%ld >%s\n", i, param_list[i]);
