@@ -157,10 +157,11 @@ size_t perform_request(int writebackfd, char* host, char* port, char** param_lis
         ++counter;
     }
 
+    __LOG__(file_fd, "Trying to read from server\n");
     Rio_readinitb(&request_rio, clientfd);
 
     size_t length = 0;
-    __LOG__(file_fd, "Trying to read from server\n");
+
     while ((n = Rio_readlineb(&request_rio, response, MAXLINE)) != 0) {
         length += n;
         Rio_writen(writebackfd, response, n);
