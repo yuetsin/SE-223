@@ -97,7 +97,7 @@ size_t read_request(int connfd, char* uri) {
         }
 
         if (n <= 2) {
-            continue;
+            break;
         }
         __LOG__(file_fd, "Server received %d bytes\n", ( int )n);
         __LOG__(file_fd, "%s\n", buf);
@@ -115,7 +115,9 @@ size_t read_request(int connfd, char* uri) {
         // printf("Added param #%ld: %s\n", counter, param_list[counter]);
         ++counter;
     }
+    __LOG__(file_fd, "ready for call perform_request\n");
     size_t resp_size = perform_request(connfd, hostname, port, param_list);
+
     return resp_size;
 }
 
