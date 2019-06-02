@@ -1,0 +1,26 @@
+Sun 02 Jun 2019 10:49:32 CST: logging start
+Hey im here ahh
+Loop enter
+
+
+
+Connected to (debian-gnu-linux-9.shared, 38736)
+Server received 41 bytes
+GET http://10.211.55.14:42499/ HTTP/1.1
+
+parse_uri parsed hostname: 10.211.55.14, pathname: , port: 42499
+Server received 25 bytes
+Accept-Charset: latin-1
+
+Server received 20 bytes
+Accept: image/jpeg
+
+entered perform_request. writebackfd: 5, host: 10.211.55.14, port: 42499, port_buf: 42499
+Param #0 >GET http://10.211.55.14:42499/ HTTP/1.1
+Param #1 >Accept-Charset: latin-1
+Param #2 >Accept: image/jpeg
+bad clientfd: -1
+Loop enter
+
+
+
