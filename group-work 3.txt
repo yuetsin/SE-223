@@ -1,0 +1,151 @@
+测试：插入数据的优化
+
+分开插入 100000 条数据，也就是每一句都需要提交到关系引擎那里去解析，优化，然后才能够到达存储引擎做真的插入工作。上述所说的同时插入多条就是一种优化。
+
++----------+------------+--------------------------------------------------------------+
+| Query_ID | Duration   | Query                                                        |
++----------+------------+--------------------------------------------------------------+
+|     9987 | 0.00011200 | Insert Into `user` Values ('钱裙子', '1', 15591206326)       |
+|     9988 | 0.00010000 | Insert Into `user` Values ('杨口红', '0', 13025155024)       |
+|     9989 | 0.00020600 | Insert Into `user` Values ('孙鱼', '2', 15528628049)         |
+|     9990 | 0.00014100 | Insert Into `user` Values ('王黑夜', '0', 13987359460)       |
+|     9991 | 0.00049000 | Insert Into `user` Values ('赵八宝粥', '1', 17685106641)     |
+|     9992 | 0.00009700 | Insert Into `user` Values ('冯板栗', '2', 15584408123)       |
+|     9993 | 0.00007700 | Insert Into `user` Values ('杨小馒头', '0', 13082495247)     |
+|     9994 | 0.00007300 | Insert Into `user` Values ('赵路灯', '2', 13026998448)       |
+|     9995 | 0.00007000 | Insert Into `user` Values ('韩仙人掌', '2', 13077519272)     |
+|     9996 | 0.00085600 | Insert Into `user` Values ('孙鸡', '0', 15517630062)         |
+|     9997 | 0.00062500 | Insert Into `user` Values ('陈秀发', '2', 13360042992)       |
+|     9998 | 0.00018400 | Insert Into `user` Values ('冯飞机', '0', 17543658794)       |
+|     9999 | 0.00010200 | Insert Into `user` Values ('蒋面包', '2', 15554143202)       |
+|    10000 | 0.00057300 | Insert Into `user` Values ('钱咖啡豆', '2', 13922540430)     |
+|    10001 | 0.00086300 | Insert Into `user` Values ('郑花卷', '1', 17146773187)       |
++----------+------------+--------------------------------------------------------------+
+
+每条 Insert 语句的平均插入时间为 
+如上，平均每一条语句的执行时间在 10e-4 到 10e-3 数量级。
+
+如果我们将十条语句进行串联加入，那么结果是：
+
+|    10007 | 0.00037200 | Insert Into `user` Values 
+|    10008 | 0.00042700 | Insert Into `user` Values 
+|    10009 | 0.00040600 | Insert Into `user` Values
+|    10010 | 0.00023700 | Insert Into `user` Value
+|    10011 | 0.00038300 | Insert Into `user` Value
+|    10012 | 0.00035600 | Insert Into `user` Valu
+|    10013 | 0.00309200 | Insert Into `user` Value
+
+
+删除：两种方式，DELETE FROM `table`
+另一种是 TRUNCATE TABLE `table`
+
+mysql> DELETE FROM `orders`;
+Query OK, 13810 rows affected (0.13 sec)
+
+第一种会记录日志，可以回滚。
+
+mysql> DELETE FROM `orders`;
+Query OK, 13808 rows affected (0.10 sec)
+
+mysql> DELETE FROM `dishes`;
+Query OK, 13436 rows affected (0.14 sec)
+
+mysql> DELETE FROM `coupon`;
+Query OK, 13483 rows affected (0.10 sec)
+
+mysql> DELETE FROM `store`;
+Query OK, 10000 rows affected (0.09 sec)
+
+
+第二种就完全没有。
+
+mysql> TRUNCATE TABLE `orders`;
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> TRUNCATE TABLE `dishes`;
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> TRUNCATE TABLE `coupon`;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> TRUNCATE TABLE `store`;
+Query OK, 0 rows affected (0.02 sec)
+
+分开 UPDATE：
+mysql> UPDATE dishes
+    -> SET name = "VERY EXPENSIVE DISH"
+    -> WHERE price > 1000;
+
+Query OK, 9358 rows affected (0.23 sec)
+Rows matched: 9358  Changed: 9358  Warnings: 0
+
+mysql> UPDATE dishes
+    -> SET name = "VERY CHEAP DISH"
+    -> WHERE price < 10;
+
+Query OK, 1126 rows affected (0.04 sec)
+Rows matched: 1126  Changed: 1126  Warnings: 0
+
+用 CASE WHEN ELSE 合并在一起。只做一次遍历：
+mysql> UPDATE dishes 
+    ->   SET name = CASE price
+    ->     WHEN price > 1000 THEN "EXPENSIVE DISH"
+    ->     ELSE "CHEAP DISH"
+    ->   END
+    -> WHERE price > 1000 OR price < 10;
+Query OK, 10484 rows affected (0.20 sec)
+Rows matched: 10484  Changed: 10484  Warnings: 0
+
+
+|    10995 | 0.23355700 | MARK EXPENSIVE DISH SEPARATEDLY                                                                                                                                                                                                                                 |
+|    10996 | 0.04341900 | MARK CHEAP DISH SEPERATEDLY
+|
+|    11004 | 0.20207200 | MARK THEM BOTH SIMULTANEOUSLY
+
+
+
+复杂查询 => 多个简单查询
+
+SELECT * FROM orders
+JOIN order_include ON orders.order_id = order_include.order_id
+JOIN dishes ON dishes.dish_id = order_include.dish_id
+WHERE orders.username LIKE "A%" AND dishes.name LIKE "A%";
+
+EXPLAIN:
++----+-------------+---------------+------------+--------+-----------------------------+---------------------+---------+---------------------------+------+----------+--------------------------+
+ƒ id ƒ select_type ƒ table         ƒ partitions ƒ type   ƒ possible_keys               ƒ key                 ƒ key_len ƒ ref                       ƒ rows ƒ filtered ƒ Extra                    ƒ
++----+-------------+---------------+------------+--------+-----------------------------+---------------------+---------+---------------------------+------+----------+--------------------------+
+ƒ  1 ƒ SIMPLE      ƒ orders        ƒ NULL       ƒ range  ƒ PRIMARY,FK_rider_cur_orders ƒ FK_rider_cur_orders ƒ 203     ƒ NULL                      ƒ  477 ƒ   100.00 ƒ Using where; Using index ƒ
+ƒ  1 ƒ SIMPLE      ƒ order_include ƒ NULL       ƒ ref    ƒ PRIMARY,FK_order_include2   ƒ FK_order_include2   ƒ 202     ƒ one.orders.order_id       ƒ    7 ƒ   100.00 ƒ NULL                     ƒ
+ƒ  1 ƒ SIMPLE      ƒ dishes        ƒ NULL       ƒ eq_ref ƒ PRIMARY                     ƒ PRIMARY             ƒ 202     ƒ one.order_include.dish_id ƒ    1 ƒ    11.11 ƒ Using where              ƒ
++----+-------------+---------------+------------+--------+-----------------------------+---------------------+---------+---------------------------+------+----------+--------------------------+
+3 rows in set, 1 warning (0.00 sec)
+
+
+
+SELECT *
+INTO order_sel
+FROM orders
+WHERE username LIKE 'A%';
+
+SELECT *
+INTO order_inc_sel
+FROM order_sel
+	JOIN order_include ON order_sel.order_id = order_include.order_id;
+
+SELECT *
+INTO dish_sel
+FROM dishes
+WHERE dishes.name LIKE 'A%';
+
+SELECT *
+FROM order_inc_sel
+	JOIN dish_sel ON order_inc_sel.dish_id = dish_sel.dish_id;
+
+
+可能出现的场景：
+SELECT 出最近销售效果最好的菜品相关的评论：
+
+SELECT dishes.dish_id, name, price, select_count, attribute FROM dishes JOIN order_include ON dishes.dish_id = order_include.dish_id ORDER BY select_count DESC LIMIT 100;
+
+SELECT TOP 100 dishes.dish_id, name, price, select_count, attribute FROM dishes JOIN order_include ON dishes.dish_id = order_include.dish_id;
